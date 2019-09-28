@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { Form, Input, Modal, List, Avatar, Button, Skeleton } from 'antd';
+import {Link} from "react-router-dom";
+const axios = require('axios').default;
 
 let MyForm = Form.create({name: "form_in_modal"})(
   function (props) {
     const { form: {getFieldDecorator}  } = props;
     return (
     <Form layout="vertical" >
-      <Form.Item label="Title">
-        {getFieldDecorator('title', {
-          rules: [{ required: true, message: 'Please input the title of collection!' }],
+      <Form.Item label="Name">
+        {getFieldDecorator('name', {
+          rules: [{ required: true, message: 'Please input the name of the flow!' }],
         })(<Input />)}
       </Form.Item>
       <Form.Item label="Description">
@@ -60,20 +62,28 @@ function App() {
   };
 
   useEffect(() => {
-    setList([{name: "Flow 1", description: "Description for flow 1"}]);
+    setList([{id: 1, name: "Flow 1", description: "Description for flow 1"}]);
   }, [])
 
   let onSubmit = () => {
-    console.log(formRef);
     formRef.validateFields((err, values) => {
       if (err) return;
-
+      axios.post("/api/flow", values)
+      .then(function (response) {
+        console.log(response);
+        setVisibleModal(false);
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+      .finally(function() {
+        setConfirmLoading(false); 
+      });
       console.log('Received values of form: ', values);
       formRef.resetFields();
       setConfirmLoading(true);
       setTimeout(() => {
-        setVisibleModal(false);
-        setConfirmLoading(false);
+       
       }, 2000);
     });
   }
@@ -106,14 +116,14 @@ function App() {
         dataSource={list}
         renderItem={item => (
           <List.Item
-            actions={[<a key="list-loadmore-edit">edit</a>]}
+            actions={[<a href="#!" key="list-loadmore-edit">edit</a>]}
           >
             <Skeleton avatar title={false} loading={item.loading} active>
               <List.Item.Meta
                 avatar={
                   <Avatar src={logo}/>
                 }
-                title={<a href="#!">{item.name}</a>}
+                title={<Link to={`/flow/${item.id}`}>{item.name}</Link>}
                 description={item.description}
               />
             </Skeleton>
