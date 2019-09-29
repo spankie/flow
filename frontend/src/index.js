@@ -10,12 +10,8 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 ReactDOM.render(
       <Router>
         <Switch>
-          <Route path="/flow/:flowID">
-            <Flow />
-          </Route>
-          <Route path="/">
-            <App />
-          </Route>
+          <Route path="/flow/:flowID" component={Flow}/>
+          <Route path="/" component={App}/>
         </Switch>
       </Router>, document.getElementById('root'));
 
