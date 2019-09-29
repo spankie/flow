@@ -6,4 +6,5 @@ type Flow struct {
 	gorm.Model
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Functions   []Function
 }
