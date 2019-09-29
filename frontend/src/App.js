@@ -129,7 +129,7 @@ function App() {
                 avatar={
                   <Avatar src={logo}/>
                 }
-                title={<Link to={`/flow/${item.id}`}>{item.name}</Link>}
+                title={<Link to={`/flow/${item.ID}`}>{item.name}</Link>}
                 description={item.description}
               />
             </Skeleton>
