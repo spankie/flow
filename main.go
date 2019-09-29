@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -9,13 +10,26 @@ import (
 )
 
 func main() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
 	// close the database after the servers stops
-	defer db.DB.Close()
+	db.ConnectDB()
+	DB := db.DB
+	defer DB.Close()
+
+	// get command line flags
+	migrate := flag.Bool("migrate", false, "Run migrations")
+	flag.Parse()
+
+	if *migrate {
+		// run migrations here...
+		db.Migrate()
+		return
+	}
 
 	r := gin.Default()
 	r.GET("/", func(c *gin.Context) {
@@ -26,5 +40,8 @@ func main() {
 			"message": "pong",
 		})
 	})
-	r.Run() // listen and serve on 0.0.0.0:8080
+	err = r.Run() // listen and serve on 0.0.0.0:8080
+	if err != nil {
+		log.Fatal(err)
+	}
 }
