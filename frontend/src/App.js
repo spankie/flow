@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { Form, Input, Modal, List, Avatar, Button, Skeleton } from 'antd';
+import { Form, message, Input, Modal, List, Avatar, Button, Skeleton } from 'antd';
 import {Link} from "react-router-dom";
 const axios = require('axios').default;
 
@@ -62,29 +62,35 @@ function App() {
   };
 
   useEffect(() => {
-    setList([{id: 1, name: "Flow 1", description: "Description for flow 1"}]);
+    axios.get("http://localhost:8080/api/flow")
+      .then(res => {
+        console.log(res);
+        setList(res.data.message);
+        // setList([{id: 1, name: "Flow 1", description: "Description for flow 1"}]);
+      })
+      .catch(err => {
+        console.log(err);
+      })
   }, [])
 
   let onSubmit = () => {
     formRef.validateFields((err, values) => {
       if (err) return;
-      axios.post("/api/flow", values)
-      .then(function (response) {
-        console.log(response);
+      setConfirmLoading(true);
+      axios.post("http://localhost:8080/api/flow", values)
+      .then(function (res) {
+        console.log(res);
+        message.success(res.data.message);
         setVisibleModal(false);
+        formRef.resetFields();
       })
       .catch(function (error) {
         console.log(error);
       })
       .finally(function() {
         setConfirmLoading(false); 
+        console.log('Received values of form: ', values);
       });
-      console.log('Received values of form: ', values);
-      formRef.resetFields();
-      setConfirmLoading(true);
-      setTimeout(() => {
-       
-      }, 2000);
     });
   }
 
