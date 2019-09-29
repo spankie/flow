@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from "react";
 import { Form, Input, Modal, Upload, message, Icon, Divider, Card, Col, Row, Button } from "antd";
+const axios = require('axios').default;
 
 let MyForm = Form.create({name: "new_function"})(
   function (props) {
@@ -29,6 +30,11 @@ let MyForm = Form.create({name: "new_function"})(
           rules: [{ required: true, message: 'Please input the name of the flow!' }],
         })(<Input />)}
       </Form.Item>
+      <Form.Item label="Description">
+        {getFieldDecorator('description', {
+          rules: [{ required: true, message: 'Please input the description of the flow!' }],
+        })(<Input type="textarea"/>)}
+      </Form.Item>
       <Form.Item label="Upload"> 
         {getFieldDecorator('upload', {
           valuePropName: 'file',
@@ -45,12 +51,12 @@ let MyForm = Form.create({name: "new_function"})(
   })
 
 let FormInModal = (props) => {
-    let {visibleModal, handleOk, confirmLoading, handleCancel, otherRef, onSubmit } = props;
+    let {visibleModal, handleOk, confirmLoading, handleCancel, otherRef } = props;
     return (
       <Modal
         title="Create New Function"
         visible={visibleModal}
-        onOk={onSubmit}
+        onOk={handleOk}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
         onClick={handleOk}
@@ -61,7 +67,7 @@ let FormInModal = (props) => {
   }
 
 
-function Flow(props) {
+function Flow({match}) {
   let [initLoading, setInitLoading] = useState(false);
   let [functions, setFunctions] = useState([]);
   let [visibleModal, setVisibleModal] = useState(false);
@@ -85,18 +91,54 @@ function Flow(props) {
     setVisibleModal(false);
   };
 
+  function getFunctions() {
+    axios.get(`http://localhost:8080/api/function?flow_id=${match.params.flowID}`)
+    .then(res => {
+      console.log(res);
+      setFunctions(res.data.message)
+    })
+    .catch(err => {
+      console.log(err);
+    });
+  }
+
   let onSubmit = () => {
-    console.log("hi");
+    formRef.validateFields((err, values) => {
+      if (err) return;
+      setConfirmLoading(true);
+      values.file = values.upload.file.response.name;
+      values.description = values.description || "some description";
+      values.flow_id = parseInt(match.params.flowID, 10);
+      axios.post("http://localhost:8080/api/function", values)
+      .then(function (res) {
+        console.log(res);
+        message.success(res.data.message);
+        setVisibleModal(false);
+        formRef.resetFields();
+        // refresh functions
+        getFunctions();
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+      .finally(function() {
+        setConfirmLoading(false); 
+        console.log('Received values of form: ', values);
+      });
+    });
   }
 
   useEffect((res) => {
-    console.log(res);
-    setFunctions([{name: "Function 1", file: "#!", id: 1}, {name: "Function 2", file: "#!", id: 2}])
+   getFunctions(); 
+    // setFunctions([{name: "Function 1", file: "#!", id: 1}, {name: "Function 2", file: "#!", id: 2}])
   }, []);
 
   return (
     <div style={{ padding: '1rem' }}>
+      {!functions.length ?
       <Button onClick={showModal}>Create new function</Button>
+      :""}
+      <h2>Functions</h2>
       <FormInModal
         otherRef={form => {
           if (form)
@@ -104,16 +146,15 @@ function Flow(props) {
         }}
         title="Create New Flow"
         visibleModal={visibleModal}
-        handleOk={setFormRef}
+        handleOk={onSubmit}
         confirmLoading={confirmLoading}
         handleCancel={handleCancel}
-        onSubmit={onSubmit}  
       />
       <Divider/>
     <Row gutter={16}>
       {functions.map((func, i) => ( 
       <Col span={12} key={i+1}>
-        <Card style={{backgroundColor: "#ffeedd"}} bordered={false} extra={<Button icon="plus"/>}>
+        <Card style={{backgroundColor: "#ffeedd", marginBottom:".5rem"}} bordered={false} extra={<Button onClick={showModal} icon="plus"/>}>
           <p style={{overflow: "scroll"}}>{func.name}</p>
           <p>
           <a href={func.file}>open file</a>
@@ -121,16 +162,6 @@ function Flow(props) {
         </Card>
       </Col>
       ))}
-      {/*<Col span={12}>
-        <Card title="FUnction 2" bordered={false}>
-          Card content
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card title="Function 3" bordered={false}>
-          Card content
-        </Card>
-      </Col>*/}
     </Row>
   </div>
   )
