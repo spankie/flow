@@ -1,8 +1,22 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/spankie/flow/db"
+)
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// close the database after the servers stops
+	defer db.DB.Close()
+
 	r := gin.Default()
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "Welcome to my first gin app"})
