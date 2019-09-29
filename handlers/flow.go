@@ -8,6 +8,7 @@ import (
 	"github.com/spankie/flow/models"
 )
 
+// CreateFlowHandler Creates a new flow
 func CreateFlowHandler(c *gin.Context) {
 	/// parse the content of the request
 	name := c.PostForm("name")
@@ -26,6 +27,7 @@ func CreateFlowHandler(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "Flow created successfully"})
 }
 
+// GetAllFlowsHandler retireives all Flows
 func GetAllFlowsHandler(c *gin.Context) {
 	flows := []models.Flow{}
 	errors := db.DB.Find(&flows).GetErrors()
