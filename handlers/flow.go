@@ -11,13 +11,14 @@ import (
 // CreateFlowHandler Creates a new flow
 func CreateFlowHandler(c *gin.Context) {
 	/// parse the content of the request
-	name := c.PostForm("name")
-	description := c.PostForm("description")
-	flow := models.Flow{
-		Name:        name,
-		Description: description,
-	}
+	// name, _ := c.GetPostForm("name")
+	// description, _ := c.GetPostForm("description")
+	// log.Printf("name: %s\ndesc: %s\n\n", name, description)
+	flow := models.Flow{}
+	// Name:        name,
+	// Description: description,
 
+	c.BindJSON(&flow)
 	errors := db.DB.Create(&flow).GetErrors()
 	if len(errors) > 0 {
 		log.Printf("validation errors: %v\n", errors)
