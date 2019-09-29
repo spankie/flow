@@ -39,8 +39,8 @@ func main() {
 	api := r.Group("/api")
 	api.POST("/flow", handlers.CreateFlowHandler)
 	api.GET("/flow", handlers.GetAllFlowsHandler)
-	api.POST("/function", handlers.CreateFlowHandler)
-	api.GET("/function", handlers.CreateFlowHandler)
+	api.POST("/function", handlers.CreateFlowFunction)
+	api.GET("/function", handlers.GetFlowFunctions)
 
 	r.GET("/", handlers.HomeHandler)
 	r.GET("/ping", func(c *gin.Context) {
