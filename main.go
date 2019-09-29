@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/spankie/flow/db"
+	"github.com/spankie/flow/handlers"
 )
 
 func main() {
@@ -32,9 +33,14 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "Welcome to my first gin app"})
-	})
+
+	api := r.Group("/api")
+	api.POST("/flow", handlers.CreateFlowHandler)
+	api.GET("/flow", handlers.GetAllFlowsHandler)
+	api.POST("/function", handlers.CreateFlowHandler)
+	api.GET("/function", handlers.CreateFlowHandler)
+
+	r.GET("/", handlers.HomeHandler)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
