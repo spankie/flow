@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/spankie/flow/db"
 	"github.com/spankie/flow/handlers"
+	"github.com/spankie/flow/middlewares"
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.Use(middlewares.CORSMiddleware())
 
 	api := r.Group("/api")
 	api.POST("/flow", handlers.CreateFlowHandler)
