@@ -60,17 +60,18 @@ function App() {
     console.log('Clicked cancel button');
     setVisibleModal(false);
   };
-
-  useEffect(() => {
+  function getFlows() {
     axios.get("http://localhost:8080/api/flow")
       .then(res => {
         console.log(res);
         setList(res.data.message);
-        // setList([{id: 1, name: "Flow 1", description: "Description for flow 1"}]);
       })
       .catch(err => {
         console.log(err);
       })
+  }
+  useEffect(() => {
+   getFlows(); 
   }, [])
 
   let onSubmit = () => {
@@ -83,6 +84,7 @@ function App() {
         message.success(res.data.message);
         setVisibleModal(false);
         formRef.resetFields();
+        getFlows();
       })
       .catch(function (error) {
         console.log(error);
@@ -122,7 +124,7 @@ function App() {
         dataSource={list}
         renderItem={item => (
           <List.Item
-            actions={[<a href="#!" key="list-loadmore-edit">edit</a>]}
+            /*actions={[<a href="#!" key="list-loadmore-edit">edit</a>]}*/
           >
             <Skeleton avatar title={false} loading={item.loading} active>
               <List.Item.Meta
