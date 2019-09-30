@@ -41,7 +41,9 @@ func main() {
 	api.GET("/flow", handlers.GetAllFlowsHandler)
 	api.POST("/function", handlers.CreateFlowFunction)
 	api.GET("/function", handlers.GetFlowFunctions)
+	api.POST("/upload", handlers.FileUpload)
 
+	r.Static("/assets", "./assets")
 	r.GET("/", handlers.HomeHandler)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
