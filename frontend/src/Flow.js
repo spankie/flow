@@ -1,6 +1,25 @@
 import React, {useState, useEffect} from "react";
-import { Form, Input, Modal, Upload, message, Icon, Divider, Card, Col, Row, Button } from "antd";
+import {
+  Tabs,
+  Form,
+  Steps,
+  Input,
+  Modal,
+  Upload,
+  message,
+  Icon,
+  Divider,
+  Card,
+  Col,
+  Row,
+  Popover,
+  Button
+} from "antd";
+import {Link} from "react-router-dom";
 const axios = require('axios').default;
+
+const { TabPane } = Tabs;
+const { Step } = Steps;
 
 let MyForm = Form.create({name: "new_function"})(
   function (props) {
@@ -19,6 +38,7 @@ let MyForm = Form.create({name: "new_function"})(
         }
         if (info.file.status === 'done') {
           message.success(`${info.file.name} file uploaded successfully`);
+          // info.file.name = info.file.response.filename;
         } else if (info.file.status === 'error') {
           message.error(`${info.file.name} file upload failed.`);
         }
@@ -137,6 +157,7 @@ function Flow({match}) {
 
   return (
     <div style={{ padding: '1rem' }}>
+      <Link to="/">Back to Flows</Link>
       {!functions.length ?
       <Button onClick={showModal}>Create new function</Button>
       :""}
@@ -153,18 +174,50 @@ function Flow({match}) {
         handleCancel={handleCancel}
       />
       <Divider/>
-    <Row gutter={16}>
-      {functions.map((func, i) => ( 
-      <Col span={12} key={i+1}>
-        <Card style={{backgroundColor: "#ffeedd", marginBottom:".5rem"}} bordered={false} extra={<Button onClick={showModal} icon="plus"/>}>
-          <p style={{overflow: "scroll"}}>{func.name}</p>
-          <p>
-            <a href={`http://localhost:8080/${func.file}`}>open file</a>
-        </p>
-        </Card>
-      </Col>
-      ))}
-    </Row>
+      <Tabs defaultActiveKey="1" >
+        <TabPane tab="Boxes" key="1" style={{backgroundColor: "#eee", padding: ".5rem"}}>
+          <Row gutter={16} >
+            {functions.map((func, i) => ( 
+            <Col span={12} key={i+1}>
+              <Card style={{ marginBottom:".5rem"}} bordered={false} extra={<Button shape="circle" onClick={showModal} icon="plus"/>}>
+                <p style={{overflow: "scroll"}}>{func.name}</p>
+                <p>
+                  <a href={`http://localhost:8080/${func.file}`}>open file</a>
+                  <Popover content={<div><p>{func.description}</p></div>} title="Description">
+                    <Button icon="info" shape="circle" style={{marginLeft: ".5rem"}}/>
+                  </Popover>
+                </p>
+              </Card>
+            </Col>
+            ))}
+          </Row>
+        </TabPane>
+        <TabPane tab="Timeline" key="2">
+          <Steps direction="vertical" size="small" current={functions.length-1}>
+            {functions.map((func, i) => ( 
+            <Step
+              key={i+1}
+              extra="hello"
+              title={
+                <div style={{paddingBottom: ".5rem"}} >
+                  <Button  shape="circle" onClick={showModal} icon="plus"/>
+                  <span style={{marginLeft: "2rem"}}>{func.name}</span>
+                </div>}
+              description={
+                <Card style={{ width: "100%" }}>
+                  <p>{func.description}</p>
+                  <a href={`http://localhost:8080/${func.file}`}>Open File</a>
+                  <Popover content={<div><p>{func.description}</p></div>} title="Description">
+                    <Button icon="info" shape="circle" style={{marginLeft: "2rem"}}/>
+                  </Popover>
+                </Card>}
+              />
+            ))}
+          </Steps>
+        </TabPane>
+
+      </Tabs>
+    
   </div>
   )
 }
