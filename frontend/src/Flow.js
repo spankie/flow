@@ -7,7 +7,8 @@ let MyForm = Form.create({name: "new_function"})(
     const { form: {getFieldDecorator}  } = props;
     const uploadProps = {
       name: 'file',
-      action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+      // action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+      action: 'http://localhost:8080/api/upload',
       headers: {
         authorization: 'authorization-text',
       },
@@ -106,9 +107,10 @@ function Flow({match}) {
     formRef.validateFields((err, values) => {
       if (err) return;
       setConfirmLoading(true);
-      values.file = values.upload.file.response.name;
+      values.file = values.upload.file.response.filename;
       values.description = values.description || "some description";
       values.flow_id = parseInt(match.params.flowID, 10);
+      delete values.upload;
       axios.post("http://localhost:8080/api/function", values)
       .then(function (res) {
         console.log(res);
@@ -157,7 +159,7 @@ function Flow({match}) {
         <Card style={{backgroundColor: "#ffeedd", marginBottom:".5rem"}} bordered={false} extra={<Button onClick={showModal} icon="plus"/>}>
           <p style={{overflow: "scroll"}}>{func.name}</p>
           <p>
-          <a href={func.file}>open file</a>
+            <a href={`http://localhost:8080/${func.file}`}>open file</a>
         </p>
         </Card>
       </Col>
