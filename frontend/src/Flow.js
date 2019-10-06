@@ -16,7 +16,12 @@ import {
   Button
 } from "antd";
 import {Link} from "react-router-dom";
+import randomColor from "randomcolor";
+import Arrow from "react-dom-arrow";
+// import "./Flow.css";
 const axios = require('axios').default;
+
+const cs = {luminosity: 'dark', hue: "random", count: 27};
 
 const { TabPane } = Tabs;
 const { Step } = Steps;
@@ -94,6 +99,7 @@ function Flow({match}) {
   let [visibleModal, setVisibleModal] = useState(false);
   let [confirmLoading, setConfirmLoading] = useState(false);
   let [formRef, setFormRef] = useState({});
+  let [colors, setColors] = useState([]);
 
   let showModal = () => {
     setVisibleModal(true);
@@ -116,7 +122,10 @@ function Flow({match}) {
     axios.get(`http://localhost:8080/api/function?flow_id=${match.params.flowID}`)
     .then(res => {
       console.log(res);
-      setFunctions(res.data.message)
+      const fs = res.data.message;
+      setFunctions(fs)
+      cs.count = fs.length; 
+      setColors(randomColor(cs));
     })
     .catch(err => {
       console.log(err);
@@ -151,7 +160,8 @@ function Flow({match}) {
   }
 
   useEffect((res) => {
-   getFunctions(); 
+    // console.log(randomColor(cs));
+   getFunctions();
     // setFunctions([{name: "Function 1", file: "#!", id: 1}, {name: "Function 2", file: "#!", id: 2}])
   }, []);
 
@@ -175,11 +185,11 @@ function Flow({match}) {
       />
       <Divider/>
       <Tabs defaultActiveKey="1" >
-        <TabPane tab="Boxes" key="1" style={{backgroundColor: "#eee", padding: ".5rem"}}>
+        <TabPane tab="Boxes" key="1" style={{backgroundColor: "#eee", padding: "3rem"}}>
           <Row gutter={16} >
             {functions.map((func, i) => ( 
             <Col span={12} key={i+1}>
-              <Card style={{ marginBottom:".5rem"}} bordered={false} extra={<Button shape="circle" onClick={showModal} icon="plus"/>}>
+              <Card className={`func-${i+1}`} style={{ marginBottom:"3rem"/*, background: colors[i], color: "white"*/}} bordered={false} extra={<Button shape="circle" onClick={showModal} icon="plus"/>}>
                 <p style={{overflow: "scroll"}}>{func.name}</p>
                 <p>
                   <a href={`http://localhost:8080/${func.file}`}>open file</a>
@@ -188,6 +198,14 @@ function Flow({match}) {
                   </Popover>
                 </p>
               </Card>
+              <Arrow
+                fromSelector={`.func-${i+1}`}
+                fromSide={i > 0 || (i+1)%2 ? 'top':'bottom'}
+                toSelector={`.func-${i+2}`}
+                toSide={'top'}
+                color={`${colors[i]}`}
+                stroke={1}
+            />
             </Col>
             ))}
           </Row>
