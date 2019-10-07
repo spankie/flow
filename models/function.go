@@ -12,6 +12,7 @@ type Function struct {
 	File        string `json:"file"`
 	FlowID      uint   `json:"flow_id"`
 	Description string `json:"description"`
+	PrevFuncID  uint   `json:"prev_func_id" gorm:"-"`
 	// Flow   Flow   `json:"flow" binding:"-" form:"-"`
 }
 
