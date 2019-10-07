@@ -41,6 +41,7 @@ func main() {
 	api.GET("/flow", handlers.GetAllFlowsHandler)
 	api.POST("/function", handlers.CreateFlowFunction)
 	api.GET("/function", handlers.GetFlowFunctions)
+	api.DELETE("/function", handlers.DeleteFunction)
 	api.POST("/upload", handlers.FileUpload)
 
 	r.Static("/assets", "./assets")
