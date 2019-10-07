@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/spankie/flow/db"
 	"github.com/spankie/flow/models"
 )
@@ -36,7 +37,15 @@ func CreateFlowFunction(c *gin.Context) {
 	function := models.Function{}
 	c.BindJSON(&function)
 
-	log.Println(function.FlowID)
+	log.Println(function)
+	if function.PrevFuncID > 0 {
+		function.ID = function.PrevFuncID + 1
+		// change the if o the rest
+		db.DB.Table("functions").
+			Where("flow_id = ?", function.FlowID).
+			Where("id > ?", function.PrevFuncID).
+			Order("id desc").Update("id", gorm.Expr("id+1"))
+	}
 	errs := db.DB.Create(&function).GetErrors()
 	if len(errs) > 0 {
 		log.Println(errs)
@@ -45,4 +54,18 @@ func CreateFlowFunction(c *gin.Context) {
 	}
 	// get the function id the flow belongs to...
 	c.JSON(http.StatusOK, gin.H{"message": "Function Created successfully"})
+}
+
+func DeleteFunction(c *gin.Context) {
+	fID, valid := c.GetQuery("f")
+	if !valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request"})
+		return
+	}
+	errors := db.DB.Where("id = ?", fID).Delete(models.Function{}).GetErrors()
+	if len(errors) > 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error: Could not delete"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Function delete successfully"})
 }
