@@ -100,8 +100,11 @@ function Flow({match}) {
   let [confirmLoading, setConfirmLoading] = useState(false);
   let [formRef, setFormRef] = useState({});
   let [colors, setColors] = useState([]);
+  let [callingFunction, setCallingFunction] = useState(0);
 
-  let showModal = () => {
+  let showModal = (ID) => {
+    if (ID)
+      setCallingFunction(ID);
     setVisibleModal(true);
   };
 
@@ -109,6 +112,8 @@ function Flow({match}) {
     setConfirmLoading(true);
     setTimeout(() => {
       setVisibleModal(false);
+      // set the calling function ID to 0
+    setCallingFunction(0);
       setConfirmLoading(false);
     }, 2000);
   };
@@ -116,6 +121,8 @@ function Flow({match}) {
   let handleCancel = () => {
     console.log('Clicked cancel button');
     setVisibleModal(false);
+    // set the calling function ID to 0
+    setCallingFunction(0);
   };
 
   function getFunctions() {
@@ -132,18 +139,39 @@ function Flow({match}) {
     });
   }
 
-  let onSubmit = () => {
+  let DeleteFunction = (id) => {
+    axios.delete(`http://localhost:8080/api/function?f=${id}`,{})
+    .then(function (res) {
+      console.log(res);
+      message.success(res.data.message);
+      // refresh functions
+      getFunctions();
+    })
+    .catch(function (err) {
+      console.log(err);
+    })
+    .finally(function() {
+      console.log('Delete for id: ', id);
+    });
+
+  }
+
+  let onSubmit = (e) => {
+    // console.log("ons submit:", e);
     formRef.validateFields((err, values) => {
       if (err) return;
       setConfirmLoading(true);
       values.file = values.upload.file.response.filename;
       values.description = values.description || "some description";
       values.flow_id = parseInt(match.params.flowID, 10);
+      values.prev_func_id = callingFunction;
       delete values.upload;
       axios.post("http://localhost:8080/api/function", values)
       .then(function (res) {
         console.log(res);
         message.success(res.data.message);
+        // set the calling function ID to 0
+        setCallingFunction(0);
         setVisibleModal(false);
         formRef.resetFields();
         // refresh functions
@@ -189,14 +217,17 @@ function Flow({match}) {
           <Row gutter={16} >
             {functions.map((func, i) => ( 
             <Col span={12} key={i+1}>
-              <Card className={`func-${i+1}`} style={{ marginBottom:"3rem"/*, background: colors[i], color: "white"*/}} bordered={false} extra={<Button shape="circle" onClick={showModal} icon="plus"/>}>
+              <Card title={<Button onClick={() => {DeleteFunction(func.ID)}} shape="circle" icon="delete" type="danger"/>} className={`func-${i+1}`} style={{ marginBottom:"3rem"/*, background: colors[i], color: "white"*/}}
+                bordered={false} extra={<Button shape="circle" onClick={() => {
+                  showModal(func.ID);
+                }} icon="plus"/>}>
                 <p style={{overflow: "scroll"}}>{func.name}</p>
-                <p>
+                <div>
                   <a href={`http://localhost:8080/${func.file}`}>open file</a>
                   <Popover content={<div><p>{func.description}</p></div>} title="Description">
                     <Button icon="info" shape="circle" style={{marginLeft: ".5rem"}}/>
                   </Popover>
-                </p>
+                </div>
               </Card>
               <Arrow
                 fromSelector={`.func-${i+1}`}
@@ -205,7 +236,7 @@ function Flow({match}) {
                 toSide={'top'}
                 color={`${colors[i]}`}
                 stroke={1}
-            />
+              />
             </Col>
             ))}
           </Row>
@@ -215,7 +246,6 @@ function Flow({match}) {
             {functions.map((func, i) => ( 
             <Step
               key={i+1}
-              extra="hello"
               title={
                 <div style={{paddingBottom: ".5rem"}} >
                   <Button  shape="circle" onClick={showModal} icon="plus"/>
